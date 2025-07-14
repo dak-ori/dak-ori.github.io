@@ -290,22 +290,28 @@
 
         // 외부 링크셋 JSON 데이터 fetch (CORS 우회 프록시 사용)
         if (data.linksetUrl) {
+          console.log("링크셋 URL 요청 시작:", data.linksetUrl);
           const proxyUrl = "https://corsproxy.io/?" + encodeURIComponent(data.linksetUrl);
           fetch(proxyUrl)
             .then((res) => {
+              console.log("응답 상태:", res.status, res.statusText);
               if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
               return res.json();
             })
             .then((json) => {
-              const items = json?.linkset?.[0]?.item || [];
-              if (items.length > 0) {
-                items.forEach((item, index) => {
+              console.log("받은 링크셋 데이터:", json);
+              const links = json?.links || [];
+              console.log("추출된 링크들:", links);
+
+              if (links.length > 0) {
+                links.forEach((link, index) => {
+                  console.log(`링크 ${index + 1}:`, link);
                   const btn = document.createElement("a");
-                  btn.href = item.href || item.url || "#";
+                  btn.href = link.targetURL || "#";
                   btn.className = "action-button";
                   btn.target = "_blank";
                   btn.innerHTML = `
-                    ${item.title || item.name || `관련 링크 ${index + 1}`}
+                    ${link.title || `관련 링크 ${index + 1}`}
                     <svg
                       width="20"
                       height="20"
@@ -329,6 +335,7 @@
             })
             .catch((err) => {
               console.error("링크셋 로딩 실패:", err);
+              console.error("에러 상세:", err.message);
             });
         }
       }
