@@ -216,9 +216,8 @@
         const highlightSvg = document.getElementById("highlight-svg");
         highlightSvg.innerHTML = "";
         const img = document.getElementById("main-img");
-        const scaleX = img.clientWidth / originalSize.width;
-        const scaleY = img.clientHeight / originalSize.height;
 
+        // coords는 이미 스케일된 좌표이므로 그대로 사용
         const arr = Array.isArray(coords) ? coords : coords.split(",").map(Number);
 
         let x, y, w, h;
@@ -228,10 +227,10 @@
           w = img.clientWidth;
           h = img.clientHeight;
         } else {
-          x = arr[0] * scaleX;
-          y = arr[1] * scaleY;
-          w = (arr[2] - arr[0]) * scaleX;
-          h = (arr[3] - arr[1]) * scaleY;
+          x = arr[0];
+          y = arr[1];
+          w = arr[2] - arr[0];
+          h = arr[3] - arr[1];
         }
 
         const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
@@ -369,9 +368,41 @@
         highlightSvg.setAttribute("height", img.clientHeight);
         highlightSvg.style.width = img.clientWidth + "px";
         highlightSvg.style.height = img.clientHeight + "px";
+
+        // 이미지맵 좌표 업데이트
+        updateImageMapCoords();
+
         if (currentHighlightCoords) {
           showHighlight(currentHighlightCoords);
         }
+      }
+
+      function updateImageMapCoords() {
+        const img = document.getElementById("main-img");
+        const scaleX = img.clientWidth / originalSize.width;
+        const scaleY = img.clientHeight / originalSize.height;
+
+        // 원본 좌표들 (고정값)
+        const originalCoords = {
+          소주병: [880, 437, 935, 620],
+          배경: [0, 0, 1800, 982],
+        };
+
+        // 각 area의 좌표를 현재 이미지 크기에 맞게 업데이트
+        document.querySelectorAll("area").forEach((area) => {
+          const alt = area.getAttribute("alt");
+          const coords = originalCoords[alt];
+
+          if (coords) {
+            const scaledCoords = [
+              Math.round(coords[0] * scaleX),
+              Math.round(coords[1] * scaleY),
+              Math.round(coords[2] * scaleX),
+              Math.round(coords[3] * scaleY),
+            ];
+            area.setAttribute("coords", scaledCoords.join(","));
+          }
+        });
       }
 
       window.addEventListener("load", () => {
