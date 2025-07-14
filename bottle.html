@@ -272,12 +272,20 @@
         }
 
         if (data.linksetUrl) {
+          console.log("링크셋 URL 요청 시작:", data.linksetUrl);
           fetch(data.linksetUrl)
-            .then((res) => res.json())
+            .then((res) => {
+              console.log("응답 상태:", res.status, res.statusText);
+              return res.json();
+            })
             .then((json) => {
+              console.log("받은 링크셋 데이터:", json);
               const items = json?.linkset?.[0]?.item || [];
+              console.log("추출된 아이템들:", items);
+
               if (items.length > 0) {
                 items.forEach((item, index) => {
+                  console.log(`아이템 ${index + 1}:`, item);
                   const btn = document.createElement("a");
                   btn.href = item.href || item.url || "#";
                   btn.className = "action-button";
@@ -290,9 +298,14 @@
                   `;
                   buttonGroup.appendChild(btn);
                 });
+              } else {
+                console.log("링크셋 아이템이 없습니다.");
               }
             })
-            .catch((err) => console.error("링크셋 로딩 실패:", err));
+            .catch((err) => {
+              console.error("링크셋 로딩 실패:", err);
+              console.error("에러 상세:", err.message);
+            });
         }
       }
 
