@@ -229,11 +229,15 @@
     </svg>
 
     <script>
+      // 원본 이미지 크기 설정
+      const originalSize = { width: 1338, height: 1676 };
+
       const infoMapData = {
         "1번째 남자": {
           type: "인물",
           name: "1번째 남자",
           description: "첫 번째 위치에 있는 남성 인물입니다.",
+          linksetUrl: "https://id.oliot.org/01/88000269314144?linktype=linkset",
           image: "",
           details: { 위치: "왼쪽 하단", 역할: "등장 인물 A" },
           actions: [
@@ -248,6 +252,7 @@
           type: "인물",
           name: "2번째 여자",
           description: "두 번째 위치에 있는 여성 인물입니다.",
+          linksetUrl: "https://id.oliot.org/01/88000269314144?linktype=linkset",
           image: "",
           details: { 위치: "왼쪽 중앙", 역할: "주요 인물 B" },
           actions: [
@@ -262,6 +267,7 @@
           type: "인물",
           name: "3번째 여자",
           description: "세 번째 위치에 있는 여성 인물입니다.",
+          linksetUrl: "https://id.oliot.org/01/88000269314144?linktype=linkset",
           image: "",
           details: { 위치: "중앙", 역할: "주요 인물 C" },
           actions: [
@@ -276,6 +282,7 @@
           type: "인물",
           name: "4번째 남자",
           description: "네 번째 위치에 있는 남성 인물입니다.",
+          linksetUrl: "https://id.oliot.org/01/88000269314144?linktype=linkset",
           image: "",
           details: { 위치: "중앙 우측", 역할: "등장 인물 D" },
           actions: [
@@ -290,6 +297,7 @@
           type: "인물",
           name: "5번째 여자",
           description: "다섯 번째 위치에 있는 여성 인물입니다.",
+          linksetUrl: "https://id.oliot.org/01/88000269314144?linktype=linkset",
           image: "",
           details: { 위치: "오른쪽", 역할: "등장 인물 E" },
           actions: [
@@ -304,6 +312,7 @@
           type: "배경",
           name: "전체 장면",
           description: "메리 크리스마스 이미지의 전체 장면입니다.",
+          linksetUrl: "https://id.oliot.org/01/88000269314144?linktype=linkset",
           image: "",
           details: { 장소: "크리스마스 장면", 시간: "저녁" },
           actions: [
@@ -351,6 +360,8 @@
         // 액션 버튼 생성
         const buttonGroup = document.getElementById("action-buttons");
         buttonGroup.innerHTML = "";
+
+        // 기존 정적 버튼 생성
         if (data.actions) {
           data.actions.forEach((action) => {
             const button = document.createElement("a");
@@ -365,6 +376,46 @@
             `;
             buttonGroup.appendChild(button);
           });
+        }
+
+        // 링크셋 데이터 가져오기 (동적 버튼 생성)
+        if (data.linksetUrl) {
+          console.log("링크셋 URL 요청 시작:", data.linksetUrl);
+          const proxyUrl = "https://corsproxy.io/?" + encodeURIComponent(data.linksetUrl);
+          fetch(proxyUrl)
+            .then((res) => {
+              console.log("응답 상태:", res.status, res.statusText);
+              if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+              return res.json();
+            })
+            .then((json) => {
+              console.log("받은 링크셋 데이터:", json);
+              const links = json?.links || [];
+              console.log("추출된 링크들:", links);
+
+              if (links.length > 0) {
+                links.forEach((link, index) => {
+                  console.log(`링크 ${index + 1}:`, link);
+                  const btn = document.createElement("a");
+                  btn.href = link.targetURL || "#";
+                  btn.className = "action-button";
+                  btn.target = "_blank";
+                  btn.innerHTML = `
+                    ${link.title || `관련 링크 ${index + 1}`}
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"></path>
+                    </svg>
+                  `;
+                  buttonGroup.appendChild(btn);
+                });
+              } else {
+                console.log("링크셋 아이템이 없습니다.");
+              }
+            })
+            .catch((err) => {
+              console.error("링크셋 로딩 실패:", err);
+              console.error("에러 상세:", err.message);
+            });
         }
       }
 
@@ -469,12 +520,36 @@
       // 이미지 리사이즈/로드 시 하이라이트 SVG 크기 동기화
       function syncSvgSize() {
         const img = document.getElementById("main-img");
-        const highlightSvg = document.getElementById("highlight-svg");
-        highlightSvg.setAttribute("width", img.clientWidth);
-        highlightSvg.setAttribute("height", img.clientHeight);
-        highlightSvg.style.width = img.clientWidth + "px";
-        highlightSvg.style.height = img.clientHeight + "px";
+        const svg = document.getElementById("highlight-svg");
+        svg.style.width = img.clientWidth + "px";
+        svg.style.height = img.clientHeight + "px";
+        updateImageMapCoords();
       }
+
+      // 이미지맵 좌표 업데이트 함수
+      function updateImageMapCoords() {
+        const img = document.getElementById("main-img");
+        const areas = document.querySelectorAll("area");
+
+        areas.forEach((area) => {
+          const alt = area.getAttribute("alt");
+          if (alt && targetCoords[alt]) {
+            const target = targetCoords[alt];
+            const scaleX = img.clientWidth / originalSize.width;
+            const scaleY = img.clientHeight / originalSize.height;
+
+            // 새로운 좌표 계산
+            const newX1 = Math.round(target.x * scaleX);
+            const newY1 = Math.round(target.y * scaleY);
+            const newX2 = Math.round((target.x + target.width) * scaleX);
+            const newY2 = Math.round((target.y + target.height) * scaleY);
+
+            // 좌표 업데이트
+            area.setAttribute("coords", `${newX1},${newY1},${newX2},${newY2}`);
+          }
+        });
+      }
+
       document.getElementById("main-img").addEventListener("load", syncSvgSize);
       window.addEventListener("resize", syncSvgSize);
       syncSvgSize();
