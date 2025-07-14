@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Web Image Map with Rect Info</title>
+    <style>
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        background: #f8f9fa;
+        margin: 0;
+        padding: 0;
+      }
+
+      .main-container {
+        display: flex;
+        height: 100vh;
+        align-items: center;
+        justify-content: center;
+        gap: 24px;
+        padding: 20px;
+      }
+
+      .image-section {
+        position: relative;
+      }
+
+      #container {
+        position: relative;
+        display: inline-block;
+        max-width: 70vw;
+        max-height: 90vh;
+      }
+
+      img {
+        width: 100%;
+        height: auto;
+        display: block;
+        border-radius: 12px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+      }
+
+      area {
+        cursor: pointer;
+      }
+
+      .info-panel {
+        background: white;
+        border-left: 1px solid #e5e7eb;
+        display: flex;
+        flex-direction: column;
+        box-shadow: -5px 0 15px rgba(0, 0, 0, 0.1);
+        border-radius: 12px;
+        overflow: hidden;
+        width: 360px;
+        min-height: 400px;
+      }
+
+      .panel-header {
+        padding: 24px;
+        border-bottom: 1px solid #e5e7eb;
+        background: #f8f9fa;
+        position: relative;
+      }
+
+      .panel-content {
+        flex: 1;
+        padding: 24px;
+        overflow-y: auto;
+      }
+
+      .panel-placeholder {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+        color: #6b7280;
+        text-align: center;
+        padding: 40px 20px;
+      }
+
+      .modal-title {
+        font-size: 24px;
+        font-weight: bold;
+        color: #1f2937;
+        margin: 0;
+      }
+
+      .modal-close {
+        position: absolute;
+        top: 24px;
+        right: 24px;
+        background: none;
+        border: none;
+        font-size: 24px;
+        cursor: pointer;
+        color: #6b7280;
+      }
+
+      .modal-image {
+        width: 100%;
+        height: 200px;
+        object-fit: cover;
+        border-radius: 12px;
+        margin-bottom: 16px;
+      }
+
+      .modal-description {
+        color: #6b7280;
+        margin-bottom: 20px;
+        line-height: 1.6;
+        font-size: 15px;
+      }
+
+      .modal-details {
+        display: grid;
+        gap: 12px;
+      }
+
+      .detail-item {
+        display: flex;
+        justify-content: space-between;
+        border-bottom: 1px solid #f3f4f6;
+        padding-bottom: 8px;
+      }
+
+      .detail-label {
+        font-weight: 600;
+        color: #374151;
+        font-size: 14px;
+      }
+
+      .detail-value {
+        color: #6b7280;
+        font-size: 14px;
+      }
+
+      .modal-badge {
+        display: inline-block;
+        padding: 6px 12px;
+        background: #ddd6fe;
+        color: #7c3aed;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+        margin-bottom: 12px;
+      }
+
+      .button-group {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        margin-top: 20px;
+      }
+
+      .action-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px 16px;
+        background-color: #f3f4f6;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        color: #374151;
+        font-size: 14px;
+        font-weight: 500;
+        text-decoration: none;
+        transition: all 0.2s;
+        cursor: pointer;
+      }
+
+      .action-button:hover {
+        background-color: #7c3aed;
+        border-color: #7c3aed;
+        color: white;
+      }
+
+      .action-button svg {
+        width: 20px;
+        height: 20px;
+        margin-left: 8px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="main-container">
+      <div class="image-section">
+        <div id="container">
+          <img id="main-img" src="static/merry.png" usemap="#map" alt="이미지맵" />
+          <svg id="highlight-svg" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 2"></svg>
+        </div>
+        <map name="map" id="img-map">
+          <area shape="rect" coords="0,330,230,1676" alt="1번째 남자" />
+          <area shape="rect" coords="231,450,445,1676" alt="2번째 여자" />
+          <area shape="rect" coords="446,450,650,1676" alt="3번째 여자" />
+          <area shape="rect" coords="651,400,860,1676" alt="4번째 남자" />
+          <area shape="rect" coords="861,530,1338,1676" alt="5번째 여자" />
+          <area id="rest-box" shape="rect" coords="0,0,1338,1676" alt="배경" />
+        </map>
+      </div>
+
+      <div id="info-panel" class="info-panel">
+        <div class="panel-header">
+          <span id="panel-badge" class="modal-badge" style="display: none"></span>
+          <h2 id="panel-title" class="modal-title">정보 패널</h2>
+          <button class="modal-close" onclick="closeInfoPanel()">×</button>
+        </div>
+        <div class="panel-content">
+          <div id="panel-placeholder" class="panel-placeholder">
+            <h3>정보를 확인하세요</h3>
+            <p>이미지의 영역을 클릭하면<br />상세 정보가 여기에 표시됩니다.</p>
+          </div>
+          <div id="panel-info" style="display: none">
+            <img id="panel-image" class="modal-image" style="display: none" />
+            <p id="panel-description" class="modal-description"></p>
+            <div id="panel-details" class="modal-details"></div>
+            <div class="button-group" id="action-buttons"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SVG 아이콘 정의 -->
+    <svg style="display: none">
+      <defs>
+        <symbol id="icon-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d=""></path>
+        </symbol>
+      </defs>
+    </svg>
+
+    <script>
+      const infoMapData = {
+        "1번째 남자": {
+          type: "인물",
+          name: "1번째 남자",
+          description: "첫 번째 위치에 있는 남성 인물입니다.",
+          image: "",
+          details: { 위치: "왼쪽 하단", 역할: "등장 인물 A" },
+          actions: [
+            {
+              text: "인물 정보 보기",
+              url: "https://example.com/character1",
+              icon: "M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z",
+            },
+          ],
+        },
+        "2번째 여자": {
+          type: "인물",
+          name: "2번째 여자",
+          description: "두 번째 위치에 있는 여성 인물입니다.",
+          image: "",
+          details: { 위치: "왼쪽 중앙", 역할: "주요 인물 B" },
+          actions: [
+            {
+              text: "인물 정보 보기",
+              url: "https://example.com/character2",
+              icon: "M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z",
+            },
+          ],
+        },
+        "3번째 여자": {
+          type: "인물",
+          name: "3번째 여자",
+          description: "세 번째 위치에 있는 여성 인물입니다.",
+          image: "",
+          details: { 위치: "중앙", 역할: "주요 인물 C" },
+          actions: [
+            {
+              text: "인물 정보 보기",
+              url: "https://example.com/character3",
+              icon: "M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z",
+            },
+          ],
+        },
+        "4번째 남자": {
+          type: "인물",
+          name: "4번째 남자",
+          description: "네 번째 위치에 있는 남성 인물입니다.",
+          image: "",
+          details: { 위치: "중앙 우측", 역할: "등장 인물 D" },
+          actions: [
+            {
+              text: "인물 정보 보기",
+              url: "https://example.com/character4",
+              icon: "M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z",
+            },
+          ],
+        },
+        "5번째 여자": {
+          type: "인물",
+          name: "5번째 여자",
+          description: "다섯 번째 위치에 있는 여성 인물입니다.",
+          image: "",
+          details: { 위치: "오른쪽", 역할: "등장 인물 E" },
+          actions: [
+            {
+              text: "인물 정보 보기",
+              url: "https://example.com/character5",
+              icon: "M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z",
+            },
+          ],
+        },
+        배경: {
+          type: "배경",
+          name: "전체 장면",
+          description: "메리 크리스마스 이미지의 전체 장면입니다.",
+          image: "",
+          details: { 장소: "크리스마스 장면", 시간: "저녁" },
+          actions: [
+            {
+              text: "전체 이미지 다운로드",
+              url: "https://example.com/download-scene",
+              icon: "M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3",
+            },
+            {
+              text: "장면 정보 보기",
+              url: "https://example.com/scene-info",
+              icon: "M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z",
+            },
+          ],
+        },
+      };
+
+      function openInfoPanel(data) {
+        document.getElementById("panel-title").textContent = data.name;
+        document.getElementById("panel-description").textContent = data.description;
+        document.getElementById("panel-placeholder").style.display = "none";
+        document.getElementById("panel-info").style.display = "block";
+
+        const badge = document.getElementById("panel-badge");
+        badge.textContent = data.type;
+        badge.style.display = "inline-block";
+
+        const image = document.getElementById("panel-image");
+        if (data.image) {
+          image.src = data.image;
+          image.style.display = "block";
+        } else {
+          image.style.display = "none";
+        }
+
+        const details = document.getElementById("panel-details");
+        details.innerHTML = "";
+        Object.entries(data.details).forEach(([key, val]) => {
+          const item = document.createElement("div");
+          item.className = "detail-item";
+          item.innerHTML = `<span class="detail-label">${key}</span><span class="detail-value">${val}</span>`;
+          details.appendChild(item);
+        });
+
+        // 액션 버튼 생성
+        const buttonGroup = document.getElementById("action-buttons");
+        buttonGroup.innerHTML = "";
+        if (data.actions) {
+          data.actions.forEach((action) => {
+            const button = document.createElement("a");
+            button.href = action.url;
+            button.className = "action-button";
+            button.target = "_blank";
+            button.innerHTML = `
+              ${action.text}
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="${action.icon}"></path>
+              </svg>
+            `;
+            buttonGroup.appendChild(button);
+          });
+        }
+      }
+
+      function closeInfoPanel() {
+        document.getElementById("panel-placeholder").style.display = "flex";
+        document.getElementById("panel-info").style.display = "none";
+        document.getElementById("panel-badge").style.display = "none";
+        document.getElementById("panel-title").textContent = "정보 패널";
+      }
+
+      // 자동 좌표 변환 함수
+
+      // 초기 좌표 저장 변수 추가 (targetCoords)
+      const targetCoords = {
+        "1번째 남자": { x: 0, y: 430, width: 304, height: 1246 },
+        "2번째 여자": { x: 305, y: 550, width: 245, height: 1246 },
+        "3번째 여자": { x: 551, y: 550, width: 249, height: 1246 },
+        "4번째 남자": { x: 801, y: 450, width: 275, height: 1246 },
+        "5번째 여자": { x: 1070, y: 580, width: 268, height: 1246 },
+        배경: { x: 0, y: 0, width: 1338, height: 1676 },
+      };
+
+      // 이미지맵 좌표와 하이라이트 완전 일치
+      function getImageMapRect(coords) {
+        // coords: "x1, y1, x2, y2" (원본 이미지 기준)
+        const img = document.getElementById("main-img");
+        const arr = coords.split(",").map((c) => parseInt(c.trim(), 10));
+
+        const alt = document.querySelector(`area[coords="${coords}"]`)?.getAttribute("alt");
+        if (alt && targetCoords[alt]) {
+          const target = targetCoords[alt];
+          // targetCoords 좌표 사용
+          const scaleX = img.clientWidth / img.naturalWidth;
+          const scaleY = img.clientHeight / img.naturalHeight;
+          return {
+            x: target.x * scaleX,
+            y: target.y * scaleY,
+            width: target.width * scaleX,
+            height: target.height * scaleY,
+          };
+        }
+
+        // 기존 방식 폴백
+        const scaleX = img.clientWidth / img.naturalWidth;
+        const scaleY = img.clientHeight / img.naturalHeight;
+        return {
+          x: arr[0] * scaleX,
+          y: arr[1] * scaleY,
+          width: (arr[2] - arr[0]) * scaleX,
+          height: (arr[3] - arr[1]) * scaleY,
+        };
+      }
+
+      function showHighlight(coords, isBackground = false) {
+        const highlightSvg = document.getElementById("highlight-svg");
+        highlightSvg.innerHTML = "";
+        const rectData = getImageMapRect(coords);
+
+        const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+        rect.setAttribute("x", rectData.x);
+        rect.setAttribute("y", rectData.y);
+        rect.setAttribute("width", rectData.width);
+        rect.setAttribute("height", rectData.height);
+        rect.setAttribute("rx", "12");
+
+        if (isBackground) {
+          rect.setAttribute("fill", "rgba(124,58,237,0.05)");
+          rect.setAttribute("stroke", "#7c3aed");
+          rect.setAttribute("stroke-width", "2");
+          rect.setAttribute("stroke-dasharray", "8 4");
+        } else {
+          rect.setAttribute("fill", "rgba(124,58,237,0.15)");
+          rect.setAttribute("stroke", "#7c3aed");
+          rect.setAttribute("stroke-width", "4");
+        }
+
+        highlightSvg.appendChild(rect);
+        rect.setAttribute("rx", "12");
+        highlightSvg.appendChild(rect);
+      }
+
+      function hideHighlight() {
+        const highlightSvg = document.getElementById("highlight-svg");
+        highlightSvg.innerHTML = "";
+      }
+
+      // 이벤트 연결 (좌표 자동 변환)
+      document.querySelectorAll("area").forEach((area) => {
+        area.addEventListener("click", (e) => {
+          e.preventDefault();
+          const alt = area.getAttribute("alt");
+          const data = infoMapData[alt];
+          if (data) openInfoPanel(data);
+        });
+        area.addEventListener("mouseenter", () => {
+          const isBackground = area.getAttribute("alt") === "배경";
+          showHighlight(area.getAttribute("coords"), isBackground);
+        });
+        area.addEventListener("mouseleave", hideHighlight);
+      });
+
+      // 이미지 리사이즈/로드 시 하이라이트 SVG 크기 동기화
+      function syncSvgSize() {
+        const img = document.getElementById("main-img");
+        const highlightSvg = document.getElementById("highlight-svg");
+        highlightSvg.setAttribute("width", img.clientWidth);
+        highlightSvg.setAttribute("height", img.clientHeight);
+        highlightSvg.style.width = img.clientWidth + "px";
+        highlightSvg.style.height = img.clientHeight + "px";
+      }
+      document.getElementById("main-img").addEventListener("load", syncSvgSize);
+      window.addEventListener("resize", syncSvgSize);
+      syncSvgSize();
+    </script>
+  </body>
+</html>
