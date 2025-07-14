@@ -161,7 +161,10 @@
         <div class="panel-content">
           <div id="panel-placeholder" class="panel-placeholder">
             <h3>정보를 확인하세요</h3>
-            <p>이미지의 영역을 클릭하면<br />상세 정보가 여기에 표시됩니다.</p>
+            <p>
+              이미지의 영역을 클릭하면<br />
+              상세 정보가 여기에 표시됩니다.
+            </p>
           </div>
           <div id="panel-info" style="display: none">
             <p id="panel-description" class="modal-description"></p>
@@ -175,6 +178,8 @@
       const originalSize = { width: 1800, height: 982 };
       let currentHighlightCoords = null;
 
+      // infoMapData 내 actions 은 기존 버튼들 (정적)
+      // linksetUrl 은 동적 버튼 생성용 링크셋 API URL
       const infoMapData = {
         소주병: {
           name: "소주병",
@@ -255,6 +260,7 @@
         const buttonGroup = document.getElementById("action-buttons");
         buttonGroup.innerHTML = "";
 
+        // 기존 static 버튼 생성
         if (data.actions) {
           data.actions.forEach((action) => {
             const button = document.createElement("a");
@@ -263,37 +269,56 @@
             button.target = "_blank";
             button.innerHTML = `
               ${action.text}
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                <path stroke-linecap="round" stroke-linejoin="round" d="${action.icon}"></path>
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.5"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="${action.icon}"
+                ></path>
               </svg>
             `;
             buttonGroup.appendChild(button);
           });
         }
 
+        // 외부 링크셋 JSON 데이터 fetch (CORS 우회 프록시 사용)
         if (data.linksetUrl) {
-          console.log("링크셋 URL 요청 시작:", data.linksetUrl);
-          fetch(data.linksetUrl)
+          const proxyUrl = "https://corsproxy.io/?" + encodeURIComponent(data.linksetUrl);
+          fetch(proxyUrl)
             .then((res) => {
-              console.log("응답 상태:", res.status, res.statusText);
+              if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
               return res.json();
             })
             .then((json) => {
-              console.log("받은 링크셋 데이터:", json);
               const items = json?.linkset?.[0]?.item || [];
-              console.log("추출된 아이템들:", items);
-
               if (items.length > 0) {
                 items.forEach((item, index) => {
-                  console.log(`아이템 ${index + 1}:`, item);
                   const btn = document.createElement("a");
                   btn.href = item.href || item.url || "#";
                   btn.className = "action-button";
                   btn.target = "_blank";
                   btn.innerHTML = `
                     ${item.title || item.name || `관련 링크 ${index + 1}`}
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                      <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"></path>
+                    <svg
+                      width="20"
+                      height="20"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.5"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"
+                      ></path>
                     </svg>
                   `;
                   buttonGroup.appendChild(btn);
@@ -304,7 +329,6 @@
             })
             .catch((err) => {
               console.error("링크셋 로딩 실패:", err);
-              console.error("에러 상세:", err.message);
             });
         }
       }
