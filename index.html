@@ -1,16 +1,58 @@
 <!DOCTYPE html>
-<head>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Mermaid 다이어그램 예제</title>
+    <script type="module">
+      import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs";
+      mermaid.initialize({ startOnLoad: true });
+    </script>
+  </head>
   <body>
-    <h1>수정했습니다</h1>
-    <a href="/post.html">폭삭 속았수다 - 포스터</a>
-    <br />
-    <br />
-    <a href="/tree.html">이상한 변호사 우영우 - 팽나무</a>
-    <br />
-    <br />
-    <a href="/merry.html">폭삭 속았수다 - 결혼식장</a>
-    <br />
-    <br />
-    <a href="/bottle.html">오징어게임 - 소주병</a>
+    <h2>Mermaid 순서도</h2>
+    <pre class="mermaid">
+graph TD
+    A[Digital Link Input] --> B[MCP Server Start]
+
+    B --> C[Call Resolver API]
+    C --> D[Receive All Link Types List]
+    D --> E[Send Link Types to LLM]
+
+    E --> F[LLM Relevance Assessment]
+    F --> G[Select Top N Related Link Types]
+    G --> H[Return Selected Links to MCP]
+
+    H --> I[MCP: Start Crawling Selected Links]
+    I --> J[Collect Web Content from Each Link]
+    J --> K[Remove HTML Tags & Clean Text]
+    K --> L[Crawling Data Preprocessing Complete]
+
+    L --> M[Send Cleaned Text Data to RAG]
+    M --> N[RAG Vectorization & Response Generation]
+
+    style B fill:#e1f5fe
+    style C fill:#e8f5e8
+    style I fill:#e8f5e8
+    style M fill:#e8f5e8
+
+    subgraph "MCP Server Responsibilities"
+        C
+        D
+        E
+        I
+        J
+        K
+        L
+        M
+    end
+
+    subgraph "External Systems"
+        F
+        G
+        H
+        N
+    end
+  </pre
+    >
   </body>
-</head>
+</html>
