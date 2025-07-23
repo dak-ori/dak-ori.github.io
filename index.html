@@ -2,47 +2,89 @@
 <html lang="ko">
   <head>
     <meta charset="UTF-8" />
-    <title>Mermaid 다이어그램 예제</title>
+    <title>Mermaid Sequence Diagram with Legend</title>
     <script type="module">
       import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs";
-      mermaid.initialize({ startOnLoad: true });
     </script>
+    <style>
+      #legend {
+        font-family: Arial, sans-serif;
+        margin-bottom: 20px;
+        font-size: 14px;
+      }
+      #legend .new {
+        display: inline-block;
+        width: 15px;
+        height: 15px;
+        background-color: #4caf50;
+        margin-right: 8px;
+        vertical-align: middle;
+        border-radius: 3px;
+        border: 1px solid #3a9d23;
+      }
+      #legend .modified {
+        display: inline-block;
+        width: 15px;
+        height: 15px;
+        background-color: #d2b48c;
+        margin-right: 8px;
+        vertical-align: middle;
+        border-radius: 3px;
+        border: 1px solid #a68b59;
+      }
+      #legend .existing {
+        display: inline-block;
+        width: 15px;
+        height: 15px;
+        background-color: #ffffff;
+        margin-right: 8px;
+        vertical-align: middle;
+        border-radius: 3px;
+        border: 1px solid #000000;
+      }
+    </style>
   </head>
   <body>
-    <a href="/eng.html">English.ver</a>
-    <h2>Mermaid 순서도</h2>
+    <div id="legend">
+      <div><span class="existing"></span> 기존 (흰색 박스)</div>
+      <div><span class="new"></span> 신규 (초록색 박스)</div>
+      <div><span class="modified"></span> 수정 (황토색 박스)</div>
+    </div>
+
     <pre class="mermaid">
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>MCP 프로토콜 시퀀스</title>
+  <script type="module">
+    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+    mermaid.initialize({ startOnLoad: true });
+  </script>
+</head>
+<body>
+  <div class="mermaid">
+    sequenceDiagram
+      participant UI as 사용자(UI)
+      participant Agent as 에이전트
+      participant MCP as MCP 서버 (예: Product-MCP)
+      participant Crawler as 크롤러
+      participant LLM as LLM
+      participant DB as 캐시/DB
 
-sequenceDiagram
-    participant User
-    participant MCP_Server
-    participant Resolver
-    participant LLM
-    participant Crawler
-    participant KG
-    participant RAG
+      UI->>Agent: 질문 + 디지털링크 전달
+      Agent->>MCP: 적절한 MCP 서버에 요청 전달
+      MCP->>Crawler: 디지털링크 기반 크롤링
+      Crawler-->>MCP: 크롤링된 데이터 반환
+      MCP->>DB: 캐시 확인 또는 저장
+      MCP->>LLM: 질문 + 크롤링 데이터 전달
+      LLM-->>MCP: 응답 생성
+      MCP-->>Agent: 응답 결과 + 출처 전달
+      Agent-->>UI: 최종 답변 전달
+  </div>
+</body>
+</html>
 
-    User->>MCP_Server: 질문 + 디지털 링크 전달
-    MCP_Server->>Resolver: 디지털 링크로 링크타입 목록 요청
-    Resolver-->>MCP_Server: 링크타입 목록 반환
-
-    MCP_Server->>LLM: 질문 + 링크타입 목록 전달
-    LLM-->>MCP_Server: 관련 링크타입 Top-N 반환
-
-    loop 선택된 링크타입마다
-        MCP_Server->>Crawler: 해당 링크로 접속하여 크롤링
-        Crawler-->>MCP_Server: 정제된 데이터 반환
-    end
-
-    MCP_Server->>KG: 질문과 관련된 지식요청
-    KG-->>MCP_Server: 관련 트리플 or 정보 반환
-
-    MCP_Server->>RAG: 질문 + 크롤링 데이터 + KG 데이터 전달
-    RAG-->>MCP_Server: 응답 생성
-
-    MCP_Server-->>User: 최종 응답 반환
-
-  </pre
-    >
+    </pre>
   </body>
 </html>
