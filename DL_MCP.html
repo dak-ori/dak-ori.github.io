@@ -26,21 +26,11 @@
 sequenceDiagram
     participant UI as User (UI)
     participant Agent as Agent
-    participant LLM as LLM 
-    participant DL_MCP as DL_MCP
-    participant KG_MCP as KG 
-    participant RAG as RAG 
+    participant DL_MCP as DL MCP Server
 
     UI->>Agent: Send question + digital link
-    Agent->>LLM: Find relevant digital link types for question
-    LLM-->>Agent: Return selected link types
     Agent->>DL_MCP: Crawl URLs from selected link types
     DL_MCP-->>Agent: Return crawled data
-    Agent->>KG_MCP: Retrieve similar data
-    KG_MCP-->>Agent: Return stored + similar data
-    Agent->>RAG: Process question + crawled data + KG data
-    RAG-->>Agent: Return response
-    Agent-->>UI: Return final answer
 </pre>
   </body>
 </html>
