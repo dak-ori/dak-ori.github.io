@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>MCP Protocol Sequence Diagram</title>
+    <title>MCP Vertical Architecture</title>
     <script type="module">
       import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs";
       mermaid.initialize({ startOnLoad: true });
@@ -10,10 +10,10 @@
   </head>
   <body>
     <div class="mermaid">
-      sequenceDiagram participant UI as User (UI) participant Agent as Agent participant MCP as MCP Server (e.g., Product-MCP) participant Crawler as Crawler
-      participant LLM as LLM participant DB as Cache/DB UI->>Agent: Submit question + digital link Agent->>MCP: Forward to appropriate MCP server MCP->>Crawler:
-      Fetch data from digital link Crawler-->>MCP: Return scraped data MCP->>DB: Check/store in cache MCP->>LLM: Send question + context LLM-->>MCP: Generate
-      answer MCP-->>Agent: Return answer + source Agent-->>UI: Display final answer
+      graph TD A[User (UI)] --> B[Agent] B --> C1[MCP Server: Product] B --> C2[MCP Server: Medicine] B --> C3[MCP Server: Food] C1 --> D1[→ Crawler] C1 -->
+      D2[→ LLM] C1 --> D3[→ Cache / DB] C2 --> D1_2[→ Crawler] C2 --> D2_2[→ LLM] C2 --> D3_2[→ Cache / DB] C3 --> D1_3[→ Crawler] C3 --> D2_3[→ LLM] C3 -->
+      D3_3[→ Cache / DB] D2 --> E[Answer Generation] D2_2 --> E_2[Answer Generation] D2_3 --> E_3[Answer Generation] E --> F[Return Answer to Agent] F -->
+      G[Display to User]
     </div>
   </body>
 </html>
