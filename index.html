@@ -1,51 +1,32 @@
-<!DOCTYPE html>
-<html lang="ko">
-  <head>
-    <meta charset="UTF-8" />
-    <title>Mermaid 다이어그램 예제</title>
-    <script type="module">
-      import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs";
-      mermaid.initialize({ startOnLoad: true });
-    </script>
-  </head>
-  <body>
-    <h2>Mermaid 순서도</h2>
-    <pre class="mermaid">
-graph TD
-    A[Digital Link Input] --> B[MCP Server Start]
-    
-    B --> C[Call Resolver API]
-    C --> D[Receive Link Types & Relationships]
-    D --> E[Send Structured Data to LLM]
-    
-    E --> F[LLM Knowledge Graph Analysis]
-    F --> G[Select Related Entities & Paths]
-    G --> H[Return Entity List to MCP]
-    
-    H --> I[MCP: Crawl Selected Entity Links]
-    I --> J[Extract Entities & Relations]
-    J --> K[Build Knowledge Graph Structure]
-    K --> L[Graph Data Preprocessing Complete]
-    
-    L --> M[Send Graph Data to GraphRAG]
-    M --> N[GraphRAG: Graph Traversal & Response]
-    
-    style B fill:#e1f5fe
-    style C fill:#e8f5e8
-    style I fill:#e8f5e8
-    style M fill:#e8f5e8
-    
-    subgraph "MCP Server + Graph Processing"
-        C
-        D
-        E
-        I
-        J
-        K
-        L
-        M
+
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant MCP_Server
+    participant Resolver
+    participant LLM
+    participant Crawler
+    participant KG
+    participant RAG
+
+    User->>MCP_Server: 질문 + 디지털 링크 전달
+    MCP_Server->>Resolver: 디지털 링크로 링크타입 목록 요청
+    Resolver-->>MCP_Server: 링크타입 목록 반환
+
+    MCP_Server->>LLM: 질문 + 링크타입 목록 전달
+    LLM-->>MCP_Server: 관련 링크타입 Top-N 반환
+
+    loop 선택된 링크타입마다
+        MCP_Server->>Crawler: 해당 링크로 접속하여 크롤링
+        Crawler-->>MCP_Server: 정제된 데이터 반환
     end
-  </pre
-    >
-  </body>
-</html>
+
+    MCP_Server->>KG: 질문과 관련된 지식요청
+    KG-->>MCP_Server: 관련 트리플 or 정보 반환
+
+    MCP_Server->>RAG: 질문 + 크롤링 데이터 + KG 데이터 전달
+    RAG-->>MCP_Server: 응답 생성
+
+    MCP_Server-->>User: 최종 응답 반환
+```
