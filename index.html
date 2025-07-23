@@ -57,36 +57,9 @@
 <head>
   <meta charset="UTF-8" />
   <title>MCP 프로토콜 시퀀스</title>
-  <script type="module">
-    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
-    mermaid.initialize({ startOnLoad: true });
-  </script>
 </head>
 <body>
   <a href="/DL_MCP.html">DL_MCP</a>
   <a href="/eng.html">Eng></a>
-  <div class="mermaid">
-    sequenceDiagram
-      participant UI as 사용자(UI)
-      participant Agent as 에이전트
-      participant MCP as MCP 서버 (예: Product-MCP)
-      participant Crawler as 크롤러
-      participant LLM as LLM
-      participant DB as 캐시/DB
-
-      UI->>Agent: 질문 + 디지털링크 전달
-      Agent->>MCP: 적절한 MCP 서버에 요청 전달
-      MCP->>Crawler: 디지털링크 기반 크롤링
-      Crawler-->>MCP: 크롤링된 데이터 반환
-      MCP->>DB: 캐시 확인 또는 저장
-      MCP->>LLM: 질문 + 크롤링 데이터 전달
-      LLM-->>MCP: 응답 생성
-      MCP-->>Agent: 응답 결과 + 출처 전달
-      Agent-->>UI: 최종 답변 전달
-  </div>
-</body>
-</html>
-
-    </pre>
   </body>
 </html>
